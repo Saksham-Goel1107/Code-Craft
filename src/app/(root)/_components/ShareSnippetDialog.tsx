@@ -5,6 +5,7 @@ import { api } from "../../../../convex/_generated/api";
 import { Copy, Link2, MessageSquare, Share2, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { SignInButton, useAuth, useUser } from "@clerk/nextjs";
+import Image from "next/image";
 
 function ShareSnippetDialog({ onClose }: { onClose: () => void }) {
   const [title, setTitle] = useState("");
@@ -17,7 +18,6 @@ function ShareSnippetDialog({ onClose }: { onClose: () => void }) {
   const { isSignedIn, isLoaded } = useAuth();
   const { user } = useUser();
 
-  // Sync user profile when dialog opens
   useEffect(() => {
     if (isLoaded && user) {
       syncUser({
@@ -112,17 +112,39 @@ function ShareSnippetDialog({ onClose }: { onClose: () => void }) {
     }
   };
 
+  const handleCopyRichText = async () => {
+    if (!shareUrl) return;
+
+    try {
+      const logoUrl = `${window.location.origin}/code-craft.png`;
+      const richText = `Code Craft Snippet Share\n\nTitle: ${title}\nLanguage: ${language}\n\nI've created a code snippet with Code Craft that I'd like to share with you.\n\nView it here: ${shareUrl}\n\nCode Craft - The Professional Code Compiler\n${window.location.origin}\n\nLogo: ${logoUrl}`;
+      
+      await navigator.clipboard.writeText(richText);
+      toast.success('Rich message copied with logo URL!', { 
+        icon: '📋',
+        duration: 2000 
+      });
+    } catch (error) {
+      toast.error('Failed to copy rich message');
+      console.error('Copy error:', error);
+    }
+  };
+
   const handleMessageShare = () => {
     if (!shareUrl) return;
     
-    const messageUrl = `sms:?body=${encodeURIComponent(`Check out this code snippet: ${title}\n\n${shareUrl}`)}`;
+
+    const shareMessage = `Check out my Code Craft snippet: ${title}\n\n${shareUrl}`;
+    const messageUrl = `sms:?body=${encodeURIComponent(shareMessage)}`;
     window.open(messageUrl, '_blank');
   };
 
   const handleWhatsAppShare = () => {
     if (!shareUrl) return;
 
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`Check out this code snippet: ${title}\n\n${shareUrl}`)}`;
+
+    const shareMessage = `*Code Craft Snippet*\n\n*Title:* ${title}\n*Language:* ${language}\n\nI've created a code snippet with Code Craft.\n\n${shareUrl}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareMessage)}`;
     window.open(whatsappUrl, '_blank');
   };
 
@@ -194,6 +216,35 @@ function ShareSnippetDialog({ onClose }: { onClose: () => void }) {
                   className="flex-1 bg-transparent text-white text-sm border-none focus:outline-none truncate"
                 />
               </div>
+              
+              {/* Share preview with logo */}
+              <div className="bg-[#181825] p-4 rounded-lg">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="relative w-8 h-8 overflow-hidden rounded-md">
+                    <Image 
+                      src="/code-craft.png" 
+                      alt="Code Craft Logo" 
+                      width={32} 
+                      height={32} 
+                      className="object-contain"
+                    />
+                  </div>
+                  <h3 className="text-sm font-medium text-white">Code Craft Snippet Share</h3>
+                </div>
+                <div className="text-xs text-gray-400 space-y-1">
+                  <div><span className="font-medium text-gray-300">Title:</span> {title}</div>
+                  <div><span className="font-medium text-gray-300">Language:</span> {language}</div>
+                  <div className="mt-2 text-gray-400">I&apos;ve created a code snippet with Code Craft that I&apos;d like to share with you.</div>
+                  <div className="mt-2">
+                    <a href={shareUrl} className="text-blue-400 underline break-all" target="_blank" rel="noopener noreferrer">
+                      {shareUrl}
+                    </a>
+                  </div>
+                </div>
+                <div className="mt-3 text-xs text-gray-500">
+                  Note: When sharing, links will be clickable in WhatsApp and Messages.
+                </div>
+              </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <button
@@ -204,6 +255,15 @@ function ShareSnippetDialog({ onClose }: { onClose: () => void }) {
                 >
                   <Copy className="w-4 h-4" />
                   Copy Link
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCopyRichText}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-500/10 text-blue-400 
+                  hover:bg-blue-500/20 rounded-lg transition-colors"
+                >
+                  <Copy className="w-4 h-4" />
+                  Copy with Logo
                 </button>
                 <button
                   type="button"
@@ -218,10 +278,10 @@ function ShareSnippetDialog({ onClose }: { onClose: () => void }) {
                   type="button"
                   onClick={handleMessageShare}
                   className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-purple-500/10 text-purple-400 
-                  hover:bg-purple-500/20 rounded-lg transition-colors col-span-2"
+                  hover:bg-purple-500/20 rounded-lg transition-colors"
                 >
                   <MessageSquare className="w-4 h-4" />
-                  Share via Message
+                  Messages
                 </button>
               </div>
             </div>

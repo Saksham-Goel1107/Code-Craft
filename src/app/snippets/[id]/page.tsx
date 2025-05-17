@@ -15,6 +15,7 @@ import Comments from "./_components/Comments";
 import { useAuth } from "@clerk/nextjs";
 import { SignInButton } from "@clerk/nextjs";
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 
 function SnippetDetailPage() {
@@ -95,35 +96,46 @@ function SnippetDetailPage() {
         <div className="max-w-[1200px] mx-auto">
           {/* Header */}
           <div className="bg-[#121218] border border-[#ffffff0a] rounded-2xl p-6 sm:p-8 mb-6 backdrop-blur-xl">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center justify-center size-12 rounded-xl bg-[#ffffff08] p-2.5">
-                  <img
-                    src={`/${snippet.language}.png`}
-                    alt={`${snippet.language} logo`}
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-semibold text-white mb-2">
-                    {snippet.title}
-                  </h1>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-                    <div className="flex items-center gap-2 text-[#8b8b8d]">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">            <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center size-12 rounded-xl bg-[#ffffff08] p-2.5">
+                <Image
+                  src={`/${snippet.language}.png`}
+                  alt={`${snippet.language} logo`}
+                  width={48}
+                  height={48}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <div>
+                <h1 className="text-xl sm:text-2xl font-semibold text-white mb-2">
+                  {snippet.title}
+                </h1>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                  <div className="flex items-center gap-2 text-[#8b8b8d]">
+                    {snippet.userImageUrl ? (
+                      <Image 
+                        src={snippet.userImageUrl} 
+                        alt={snippet.userName || "User"}
+                        width={20}
+                        height={20}
+                        className="size-5 rounded-full object-cover"
+                      />
+                    ) : (
                       <User className="w-4 h-4" />
-                      <span>{snippet.userName}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-[#8b8b8d]">
-                      <Clock className="w-4 h-4" />
-                      <span>{new Date(snippet._creationTime).toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-[#8b8b8d]">
-                      <MessageSquare className="w-4 h-4" />
-                      <span>{comments?.length} comments</span>
-                    </div>
+                    )}
+                    <span>{snippet.userName}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[#8b8b8d]">
+                    <Clock className="w-4 h-4" />
+                    <span>{new Date(snippet._creationTime).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[#8b8b8d]">
+                    <MessageSquare className="w-4 h-4" />
+                    <span>{comments?.length} comments</span>
                   </div>
                 </div>
               </div>
+            </div>
               <div className="flex items-center gap-3">
                 <div className="inline-flex items-center px-3 py-1.5 bg-[#ffffff08] text-[#808086] rounded-lg text-sm font-medium">
                   {snippet.language}
@@ -182,12 +194,15 @@ function SnippetDetailPage() {
               <div className="text-center py-8">
                 <h3 className="text-xl font-medium text-gray-300 mb-4">Sign in to comment</h3>
                 <p className="text-gray-500 mb-6">Join the discussion by signing in to your account</p>
-                <SignInButton mode="modal">
-                  <button className="px-6 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 
-                  rounded-lg transition-colors">
-                    Sign In
-                  </button>
-                </SignInButton>
+                {/* Wrap SignInButton in a client-side only check using useState/useEffect */}
+                {useState !== undefined && (
+                  <SignInButton mode="modal">
+                    <button className="px-6 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 
+                    rounded-lg transition-colors">
+                      Sign In
+                    </button>
+                  </SignInButton>
+                )}
               </div>
             )}
           </div>

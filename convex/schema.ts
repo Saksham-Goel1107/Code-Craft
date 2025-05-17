@@ -6,6 +6,7 @@ export default defineSchema({
     userId: v.string(), // clerkId
     email: v.string(),
     name: v.string(),
+    imageUrl: v.optional(v.string()),
     isPro: v.boolean(),
     proSince: v.optional(v.number()),
     stripeCustomerId: v.optional(v.string()),
@@ -29,6 +30,7 @@ export default defineSchema({
     language: v.string(),
     code: v.string(),
     userName: v.string(), // store user's name for easy access
+    userImageUrl: v.optional(v.string()), // store user's image URL
     createdAt: v.number(), // timestamp
   }).index("by_user_id", ["userId"]),
 
@@ -36,6 +38,7 @@ export default defineSchema({
     snippetId: v.id("snippets"),
     userId: v.string(),
     userName: v.string(),
+    userImageUrl: v.optional(v.string()), // store user's image URL
     content: v.string(), // This will store HTML content
   }).index("by_snippet_id", ["snippetId"]),
 
@@ -47,4 +50,13 @@ export default defineSchema({
     .index("by_user_id", ["userId"])
     .index("by_snippet_id", ["snippetId"])
     .index("by_user_id_and_snippet_id", ["userId", "snippetId"]),
+    
+  processedPayments: defineTable({
+    sessionId: v.string(),
+    userId: v.string(),
+    processedAt: v.number(),
+    status: v.string(),
+    amount: v.number(),
+  }).index("by_session_id", ["sessionId"])
+    .index("by_user_id", ["userId"]),
 });

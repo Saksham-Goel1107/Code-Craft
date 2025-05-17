@@ -56,7 +56,10 @@ function Comments({ snippetId }: { snippetId: Id<"snippets"> }) {
 
       <div className="p-6 sm:p-8">
         {user ? (
-          <CommentForm onSubmit={handleSubmitComment} isSubmitting={isSubmitting} />
+          <CommentForm 
+            onSubmit={handleSubmitComment} 
+            isSubmitting={isSubmitting} 
+          />
         ) : (
           <div className="bg-[#0a0a0f] rounded-xl p-6 text-center mb-8 border border-[#ffffff0a]">
             <p className="text-[#808086] mb-4">Sign in to join the discussion</p>

@@ -1,0 +1,10 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Disallow admin or private areas if they exist
+Disallow: /admin/
+Disallow: /private/
+
+# Sitemap location
+Sitemap: https://code-craft-plum.vercel.app/sitemap.xml

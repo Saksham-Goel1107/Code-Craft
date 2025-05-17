@@ -4,7 +4,6 @@ import { useUser } from "@clerk/nextjs";
 import { useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { useState } from "react";
-
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Clock, Share2, Trash2, User } from "lucide-react";
@@ -168,9 +167,19 @@ function SnippetCard({ snippet }: { snippet: Snippet }) {
                 </h2>
                 <div className="flex items-center gap-3 text-sm text-gray-400">
                   <div className="flex items-center gap-2">
-                    <div className="p-1 rounded-md bg-gray-800/50">
-                      <User className="size-3" />
-                    </div>
+                    {snippet.userImageUrl ? (
+                      <Image 
+                        src={snippet.userImageUrl} 
+                        alt={snippet.userName || "User"}
+                        width={20}
+                        height={20}
+                        className="size-5 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="p-1 rounded-md bg-gray-800/50">
+                        <User className="size-3" />
+                      </div>
+                    )}
                     <span className="truncate max-w-[150px]">{snippet.userName}</span>
                   </div>
                 </div>

@@ -10,10 +10,12 @@ import FeatureItem from "./_components/FeatureItem";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import UpgradeButton from "./_components/UpgradeButton";
 import LoginButton from "@/components/LoginButton";
+import PaymentSuccessHandler from "./_components/PaymentSuccessHandler";
 
 async function PricingPage() {
   const user = await currentUser();
   const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+  
   const convexUser = await convex.query(api.users.getUser, {
     userId: user?.id || "",
   });
@@ -26,6 +28,8 @@ async function PricingPage() {
      selection:text-blue-200"
     >
       <NavigationHeader />
+      {/* Client-side payment handler */}
+      <PaymentSuccessHandler />
 
       {/* main content */}
 

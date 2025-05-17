@@ -39,6 +39,7 @@ export const createSnippet = mutation({
           userId: userId,
           email: identity.email || "",
           name: identity.name || "Anonymous",
+          imageUrl: identity.pictureUrl,
           isPro: false,
         });
       }
@@ -54,6 +55,7 @@ export const createSnippet = mutation({
       const snippetId = await ctx.db.insert("snippets", {
         userId,
         userName: user?.name ?? identity.name ?? "Anonymous",
+        userImageUrl: user?.imageUrl ?? identity.pictureUrl,
         title: args.title,
         language: args.language,
         code: args.code,
@@ -161,17 +163,21 @@ export const addComment = mutation({
 
     // If user doesn't exist, create one
     let userName;
+    let userImageUrl;
+    
     if (!user) {
-      
       userName = identity.name || "Anonymous";
+      userImageUrl = identity.pictureUrl;
     } else {
       userName = user.name;
+      userImageUrl = user.imageUrl || identity.pictureUrl;
     }
 
     return await ctx.db.insert("snippetComments", {
       snippetId: args.snippetId,
       userId,
       userName,
+      userImageUrl,
       content: args.content,
     });
   },

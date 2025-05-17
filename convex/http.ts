@@ -13,7 +13,10 @@ http.route({
     const payloadString = await request.text();
     const signature = request.headers.get("Stripe-Signature");
 
+    console.log("Received Stripe webhook request");
+
     if (!signature) {
+      console.error("Missing Stripe-Signature header");
       return new Response("Missing Stripe-Signature header", { status: 400 });
     }
 
@@ -23,9 +26,10 @@ http.route({
         signature,
       });
 
-      console.log("Received webhook event:", {
+      console.log("Verified webhook event:", {
         type: event.type,
-        object: event.data.object
+        id: event.id,
+        object: event.object
       });
 
       if (event.type === "checkout.session.completed") {
@@ -64,6 +68,17 @@ http.route({
         // Only process if payment was successful
         if (session.payment_status === 'paid') {
           try {
+            // First, check if we've already processed this session ID
+            const existingPayment = await ctx.runQuery(api.users.getProcessedPayment, {
+              sessionId: session.id
+            });
+            
+            if (existingPayment) {
+              console.log("Payment session already processed in webhook:", session.id);
+              return new Response("Webhook already processed", { status: 200 });
+            }
+            
+            console.log(`Upgrading user ${session.client_reference_id} to pro via webhook`);
             const { success } = await ctx.runMutation(api.users.upgradeToPro, {
               userId: session.client_reference_id,
               stripeCustomerId: customerId,
@@ -72,9 +87,26 @@ http.route({
             });
 
             if (success) {
+              // Record this session as processed
+              await ctx.runMutation(api.users.recordProcessedPayment, {
+                sessionId: session.id,
+                userId: session.client_reference_id,
+                amount: session.amount_total ? session.amount_total / 100 : 0,
+                status: 'success'
+              });
+              
               console.log("Successfully upgraded user to pro for user:", session.client_reference_id);
             } else {
               console.error("Failed to upgrade user to pro:", session.client_reference_id);
+              
+              // Record the failed attempt
+              await ctx.runMutation(api.users.recordProcessedPayment, {
+                sessionId: session.id,
+                userId: session.client_reference_id,
+                amount: session.amount_total ? session.amount_total / 100 : 0,
+                status: 'error'
+              });
+              
               throw new Error("Failed to upgrade user to pro");
             }
           } catch (error) {
@@ -132,9 +164,9 @@ http.route({
     }
 
     const eventType = evt.type;
-    if (eventType === "user.created") {
+    if (eventType === "user.created" || eventType === "user.updated") {
       // save the user to convex db
-      const { id, email_addresses, first_name, last_name } = evt.data;
+      const { id, email_addresses, first_name, last_name, image_url } = evt.data;
 
       const email = email_addresses[0].email_address;
       const name = `${first_name || ""} ${last_name || ""}`.trim();
@@ -144,10 +176,11 @@ http.route({
           userId: id,
           email,
           name,
+          imageUrl: image_url || undefined,
         });
       } catch (error) {
-        console.log("Error creating user:", error);
-        return new Response("Error creating user", { status: 500 });
+        console.log("Error syncing user:", error);
+        return new Response("Error syncing user", { status: 500 });
       }
     }
 
