@@ -3,8 +3,45 @@
 import CodeBlock from "./CodeBlock";
 
 function CommentContent({ content }: { content: string }) {
-  // Split content into parts based on code blocks
+  // Enhanced regex to better detect code blocks in various formats
   const parts = content.split(/(```[\w-]*\n[\s\S]*?\n```)/g);
+  
+  // Extended language mapping for better language support
+  const languageMap: {[key: string]: string} = {
+    'js': 'javascript',
+    'ts': 'typescript',
+    'py': 'python',
+    'rb': 'ruby',
+    'go': 'go',
+    'rs': 'rust',
+    'java': 'java',
+    'kt': 'kotlin',
+    'c': 'c',
+    'cpp': 'cpp',
+    'c++': 'cpp',
+    'cs': 'csharp',
+    'php': 'php',
+    'sh': 'bash',
+    'yml': 'yaml',
+    'yaml': 'yaml',
+    'json': 'json',
+    'md': 'markdown',
+    'html': 'html',
+    'css': 'css',
+    'sass': 'sass',
+    'scss': 'scss',
+    'sql': 'sql',
+    'jsx': 'javascript',
+    'tsx': 'typescript',
+    'xml': 'xml',
+    'dockerfile': 'dockerfile',
+    'docker': 'dockerfile',
+    'swift': 'swift',
+    'dart': 'dart',
+    'r': 'r',
+    'lua': 'lua',
+    'perl': 'perl',
+  };
 
   return (
     <div className="max-w-none text-white">
@@ -17,17 +54,12 @@ function CommentContent({ content }: { content: string }) {
             const [, lang, code] = match;
             // Normalize language name
             const language = lang?.toLowerCase() || 'plaintext';
-            // Handle common language aliases
-            const languageMap: {[key: string]: string} = {
-              'js': 'javascript',
-              'ts': 'typescript',
-              'py': 'python',
-            };
+            // Use the extended language map
             const normalizedLanguage = languageMap[language] || language;
             
             const trimmedCode = code.trim();
             return (
-              <div key={`code-${index}`} className="my-4 rounded-lg overflow-hidden">
+              <div key={`code-${index}`} className="my-4">
                 <CodeBlock 
                   language={normalizedLanguage} 
                   code={trimmedCode}
@@ -46,4 +78,5 @@ function CommentContent({ content }: { content: string }) {
     </div>
   );
 }
+
 export default CommentContent;

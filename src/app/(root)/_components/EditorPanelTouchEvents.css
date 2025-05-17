@@ -1,0 +1,16 @@
+/* Touch event handling for mobile */
+.monaco-editor {
+  touch-action: manipulation !important;
+}
+
+/* This ensures input elements don't cause zoom */
+input, button, select, textarea {
+  font-size: 16px !important;
+}
+
+/* Additional helper for the editor container */
+.editor-container {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}

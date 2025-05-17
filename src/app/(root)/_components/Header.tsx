@@ -23,8 +23,8 @@ async function Header() {
         className="flex items-center lg:justify-between justify-center 
         bg-[#0a0a0f]/80 backdrop-blur-xl p-6 mb-4 rounded-lg"
       >
-        <div className="hidden lg:flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-3 group relative">
+        <div className=" lg:flex items-center gap-8">
+          <Link href="/" className="hidden md:flex items-center gap-3 group relative">
             {/* Logo hover effect */}
 
             <div
@@ -41,7 +41,7 @@ async function Header() {
             </div>
 
             <div className="flex flex-col">
-              <span className="block text-lg font-semibold bg-gradient-to-r from-blue-400 via-blue-300 to-purple-400 text-transparent bg-clip-text">
+              <span className=" block text-lg font-semibold bg-gradient-to-r from-blue-400 via-blue-300 to-purple-400 text-transparent bg-clip-text">
                 CodeCraft
               </span>
               <span className="block text-xs text-blue-400/60 font-medium">

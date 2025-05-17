@@ -15,7 +15,7 @@ export default function SupportPage() {
           {/* Back button */}
           <Link
             href="/"
-            className="inline-flex items-center text-sm text-gray-400 hover:text-white transition-colors mb-8"
+            className="inline-flex items-center text-sm text-white hover:text-white transition-colors mb-8 cursor-pointer"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Home
@@ -71,17 +71,17 @@ export default function SupportPage() {
                 <div className="mb-4 inline-flex rounded-lg bg-purple-500/10 p-2">
                   <MessageCircle className="h-6 w-6 text-purple-500" />
                 </div>
-                <h3 className="mb-2 text-xl font-semibold text-white">Community</h3>
+                <h3 className="mb-2 text-xl font-semibold text-white">Github Community</h3>
                 <p className="mb-4 text-gray-400">
-                  Join our Discord community for real-time support and discussions.
+                  Join our Github community for real-time support and discussions.
                 </p>
                 <a
-                  href="https://discord.gg/codecraft"
+                  href="https://github.com/Saksham-Goel1107/Code-Craft/discussions"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center text-purple-500 hover:text-purple-400 transition-colors"
                 >
-                  Join Discord
+                  Join Github Disscussion
                   <svg
                     className="ml-2 h-4 w-4"
                     fill="none"
@@ -110,7 +110,7 @@ export default function SupportPage() {
                   Found a bug? Report it on our GitHub repository.
                 </p>
                 <a
-                  href="https://github.com/codecraft/issues"
+                  href="https://github.com/Saksham-Goel1107/Code-Craft/issues"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center text-green-500 hover:text-green-400 transition-colors"

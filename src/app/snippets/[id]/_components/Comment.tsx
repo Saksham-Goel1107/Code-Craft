@@ -2,6 +2,7 @@
 
 import { Trash2Icon, UserIcon } from "lucide-react";
 import { Id } from "../../../../../convex/_generated/dataModel";
+import Image from "next/image";
 import CommentContent from "./CommentContent";
 
 interface CommentProps {
@@ -10,6 +11,7 @@ interface CommentProps {
     _creationTime: number;
     userId: string;
     userName: string;
+    userImageUrl?: string;
     snippetId: Id<"snippets">;
     content: string;
   };
@@ -23,8 +25,18 @@ function Comment({ comment, currentUserId, isDeleting, onDelete }: CommentProps)
       <div className="bg-[#0a0a0f] rounded-xl p-6 border border-[#ffffff0a] hover:border-[#ffffff14] transition-all">
         <div className="flex items-start sm:items-center justify-between gap-4 mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-[#ffffff08] flex items-center justify-center flex-shrink-0">
-              <UserIcon className="w-4 h-4 text-[#808086]" />
+            <div className="w-9 h-9 rounded-full bg-[#ffffff08] flex items-center justify-center flex-shrink-0 overflow-hidden">
+              {comment.userImageUrl ? (
+                <Image 
+                  src={comment.userImageUrl} 
+                  alt={comment.userName || "User"}
+                  width={36}
+                  height={36}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <UserIcon className="w-4 h-4 text-[#808086]" />
+              )}
             </div>
             <div className="min-w-0">
               <span className="block text-[#e1e1e3] font-medium truncate">{comment.userName}</span>

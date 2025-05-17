@@ -1,6 +1,6 @@
 "use client";
 import { useCodeEditorStore } from "@/store/useCodeEditorStore";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { defineMonacoThemes, LANGUAGE_CONFIG } from "../_constants";
 import { Editor } from "@monaco-editor/react";
 import type { MonacoEditor } from "@/types/monaco";
@@ -11,13 +11,21 @@ import { useClerk } from "@clerk/nextjs";
 import { EditorPanelSkeleton } from "./EditorPanelSkeleton";
 import useMounted from "@/hooks/useMounted";
 import ShareSnippetDialog from "./ShareSnippetDialog";
+import "./EditorPanelTouchEvents.css";
 
 function EditorPanel() {
   const clerk = useClerk();
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const { language, theme, fontSize, editor, setFontSize, setEditor } = useCodeEditorStore();
-
+  const editorContainerRef = useRef<HTMLDivElement>(null);
   const mounted = useMounted();
+
+  // Handle touch events to prevent zooming
+  const preventZoom = useCallback((e: TouchEvent) => {
+    if (e.touches.length > 1) {
+      e.preventDefault();
+    }
+  }, []);
 
   useEffect(() => {
     const savedCode = localStorage.getItem(`editor-code-${language}`);
@@ -29,6 +37,22 @@ function EditorPanel() {
     const savedFontSize = localStorage.getItem("editor-font-size");
     if (savedFontSize) setFontSize(parseInt(savedFontSize));
   }, [setFontSize]);
+
+  // Add event listeners to prevent pinch zoom on mobile
+  useEffect(() => {
+    const editorContainer = editorContainerRef.current;
+    if (editorContainer) {
+      editorContainer.addEventListener('touchstart', preventZoom, { passive: false });
+      editorContainer.addEventListener('touchmove', preventZoom, { passive: false });
+    }
+    
+    return () => {
+      if (editorContainer) {
+        editorContainer.removeEventListener('touchstart', preventZoom);
+        editorContainer.removeEventListener('touchmove', preventZoom);
+      }
+    };
+  }, [preventZoom]);
 
   const handleRefresh = () => {
     const defaultCode = LANGUAGE_CONFIG[language].defaultCode;
@@ -106,7 +130,7 @@ function EditorPanel() {
         </div>
 
         {/* Editor  */}
-        <div className="relative group rounded-xl overflow-hidden ring-1 ring-white/[0.05]">
+        <div ref={editorContainerRef} className="relative group rounded-xl overflow-hidden ring-1 ring-white/[0.05] editor-container">
           {clerk.loaded && (
             <Editor
               height="600px"
@@ -117,7 +141,7 @@ function EditorPanel() {
               onMount={(editor: MonacoEditor) => setEditor(editor)}
               options={{
                 minimap: { enabled: false },
-                fontSize,
+                fontSize: window.innerWidth < 768 ? 18 : fontSize, // Larger font on mobile
                 automaticLayout: true,
                 scrollBeyondLastLine: false,
                 padding: { top: 16, bottom: 16 },
@@ -132,9 +156,13 @@ function EditorPanel() {
                 letterSpacing: 0.5,
                 roundedSelection: true,
                 scrollbar: {
-                  verticalScrollbarSize: 8,
-                  horizontalScrollbarSize: 8,
+                  verticalScrollbarSize: 12, // Larger scrollbar for mobile
+                  horizontalScrollbarSize: 12,
+                  alwaysConsumeMouseWheel: false // Allows page scrolling when at editor boundaries
                 },
+                overviewRulerLanes: 0, // Disable overview ruler to save space on mobile
+                lineNumbersMinChars: 3, // Reduce space used by line numbers
+                folding: window.innerWidth < 768 ? false : true, // Disable code folding on mobile
               }}
             />
           )}

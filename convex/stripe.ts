@@ -27,7 +27,11 @@ interface CheckoutSession {
 }
 
 export const createCheckoutSession = action({
-  args: { userId: v.string(), userEmail: v.string() },
+  args: { 
+    userId: v.string(), 
+    userEmail: v.string(),
+    origin: v.optional(v.string()) // Add origin parameter to handle production domain properly
+  },
   handler: async (ctx, args): Promise<CheckoutSession> => {
     try {
       // Check for required environment variables
@@ -35,9 +39,12 @@ export const createCheckoutSession = action({
         console.error("STRIPE_PRICE_ID is not set");
         throw new Error("STRIPE_PRICE_ID environment variable is not set");
       }
-      if (!process.env.NEXT_PUBLIC_APP_URL) {
-        console.error("NEXT_PUBLIC_APP_URL is not set");
-        throw new Error("NEXT_PUBLIC_APP_URL environment variable is not set");
+      
+      // Use the provided origin or fallback to NEXT_PUBLIC_APP_URL
+      const baseUrl = args.origin || process.env.NEXT_PUBLIC_APP_URL;
+      if (!baseUrl) {
+        console.error("No base URL provided for checkout session");
+        throw new Error("Base URL is required for checkout session");
       }
 
       // Create checkout session with detailed error logging
@@ -47,15 +54,14 @@ export const createCheckoutSession = action({
           customer_email: args.userEmail,
           client_reference_id: args.userId,
           mode: "payment",
-          billing_address_collection: "required",
-          line_items: [
+          billing_address_collection: "required",          line_items: [
             {
               price: process.env.STRIPE_PRICE_ID,
               quantity: 1,
             },
           ],
-          success_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?success=true&session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
+          success_url: `${baseUrl}/pricing?success=true&session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${baseUrl}/pricing?canceled=true`,
           metadata: {
             userId: args.userId,
           },

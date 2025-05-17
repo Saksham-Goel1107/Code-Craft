@@ -20,9 +20,13 @@ export default function UpgradeButton() {
 
     setIsLoading(true);
     try {
+      // Get the current origin to pass to the checkout session
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+      
       const { url } = await createCheckoutSession({
         userId: user.id,
         userEmail: user.emailAddresses[0].emailAddress,
+        origin
       });
 
       if (url) {
