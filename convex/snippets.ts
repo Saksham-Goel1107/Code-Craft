@@ -22,12 +22,10 @@ export const createSnippet = mutation({
     
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-      console.error('Authentication failed: No user identity found');
-      throw new Error("Authentication required. Please sign in to share snippets.");
+      throw new Error("Please sign in to share snippets");
     }
 
     const userId = validateUserIdentity(identity);
-    console.log('User authenticated:', userId);
 
     try {
       const user = await ctx.db
@@ -37,10 +35,13 @@ export const createSnippet = mutation({
         .first();
 
       if (!user) {
-        console.error('User record not found for userId:', userId);
-        throw new Error("User profile not found. Please complete your profile setup.");
+        await ctx.db.insert("users", {
+          userId: userId,
+          email: identity.email || "",
+          name: identity.name || "Anonymous",
+          isPro: false,
+        });
       }
-      console.log('User found:', user.name);
 
       // Validate input
       if (!args.title.trim()) {
@@ -52,7 +53,7 @@ export const createSnippet = mutation({
 
       const snippetId = await ctx.db.insert("snippets", {
         userId,
-        userName: user.name,
+        userName: user?.name ?? identity.name ?? "Anonymous",
         title: args.title,
         language: args.language,
         code: args.code,
@@ -127,11 +128,16 @@ export const starSnippet = mutation({
       .first();
 
     if (existing) {
-      await ctx.db.delete(existing._id);
+      // Only allow deleting if it's the user's own star
+      if (existing.userId === userId) {
+        await ctx.db.delete(existing._id);
+      }
     } else {
+      // User is adding a new star
       await ctx.db.insert("stars", {
         userId,
         snippetId: args.snippetId,
+        createdAt: Date.now(),
       });
     }
   },
@@ -153,12 +159,19 @@ export const addComment = mutation({
       .filter((q) => q.eq(q.field("userId"), userId))
       .first();
 
-    if (!user) throw new Error("User not found");
+    // If user doesn't exist, create one
+    let userName;
+    if (!user) {
+      
+      userName = identity.name || "Anonymous";
+    } else {
+      userName = user.name;
+    }
 
     return await ctx.db.insert("snippetComments", {
       snippetId: args.snippetId,
       userId,
-      userName: user.name,
+      userName,
       content: args.content,
     });
   },
@@ -223,14 +236,18 @@ export const isSnippetStarred = query({
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return false;
-    const userId = validateUserIdentity(identity);
 
+    const userId = validateUserIdentity(identity);
+    
+    // Only check for stars by the current user
     const star = await ctx.db
       .query("stars")
       .withIndex("by_user_id_and_snippet_id")
-      .filter(
-        (q) =>
-          q.eq(q.field("userId"), userId) && q.eq(q.field("snippetId"), args.snippetId)
+      .filter((q) => 
+        q.and(
+          q.eq(q.field("userId"), userId),
+          q.eq(q.field("snippetId"), args.snippetId)
+        )
       )
       .first();
 

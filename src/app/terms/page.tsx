@@ -117,8 +117,8 @@ export default function TermsPage() {
             <h2 className="text-2xl font-semibold mb-4">9. Contact Information</h2>
             <p>
               For any questions regarding these terms, please contact us at:{" "}
-              <a href="mailto:support@codecraft.dev" className="text-blue-500 hover:underline">
-                support@codecraft.dev
+              <a href="mailto:sakshamgoel1107@gmail.com" className="text-blue-500 hover:underline">
+                sakshamgoel1107@gmail.com
               </a>
             </p>
           </section>

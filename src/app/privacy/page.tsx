@@ -88,8 +88,8 @@ export default function PrivacyPage() {
             <p>
               If you have any questions about this privacy policy or our treatment
               of your personal data, please contact us at:{" "}
-              <a href="mailto:support@codecraft.dev" className="text-blue-500 hover:underline">
-                support@codecraft.dev
+              <a href="mailto:sakshamgoel1107@gmail.com" className="text-blue-500 hover:underline">
+                sakshamgoel1107@gmail.com
               </a>
             </p>
           </section>

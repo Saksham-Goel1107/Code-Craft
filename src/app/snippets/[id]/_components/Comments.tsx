@@ -1,3 +1,5 @@
+"use client";
+
 import { SignInButton, useUser } from "@clerk/nextjs";
 import { Id } from "../../../../../convex/_generated/dataModel";
 import { useState } from "react";

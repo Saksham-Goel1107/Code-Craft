@@ -7,40 +7,89 @@ import { api, internal } from "./_generated/api";
 const http = httpRouter();
 
 http.route({
-  path: "/lemon-squeezy-webhook",
+  path: "/stripe-webhook",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
     const payloadString = await request.text();
-    const signature = request.headers.get("X-Signature");
+    const signature = request.headers.get("Stripe-Signature");
 
     if (!signature) {
-      return new Response("Missing X-Signature header", { status: 400 });
+      return new Response("Missing Stripe-Signature header", { status: 400 });
     }
 
     try {
-      const payload = await ctx.runAction(internal.lemonSqueezy.verifyWebhook, {
+      const event = await ctx.runAction(internal.stripe.verifyWebhook, {
         payload: payloadString,
         signature,
       });
 
-      if (payload.meta.event_name === "order_created") {
-        const { data } = payload;
+      console.log("Received webhook event:", {
+        type: event.type,
+        object: event.data.object
+      });
 
-        const { success } = await ctx.runMutation(api.users.upgradeToPro, {
-          email: data.attributes.user_email,
-          lemonSqueezyCustomerId: data.attributes.customer_id.toString(),
-          lemonSqueezyOrderId: data.id,
-          amount: data.attributes.total,
+      if (event.type === "checkout.session.completed") {
+        const session = event.data.object;
+
+        // Validate required fields and log full session data for debugging
+        console.log("Full checkout session data:", session);
+
+        if (!session.customer_email || !session.customer || !session.client_reference_id) {
+          console.error("Missing required fields in session:", {
+            hasEmail: !!session.customer_email,
+            hasCustomer: !!session.customer,
+            hasClientRef: !!session.client_reference_id
+          });
+          throw new Error("Missing required fields in checkout session");
+        }
+
+        console.log("Processing checkout session:", {
+          customer_email: session.customer_email,
+          customer: session.customer,
+          client_reference_id: session.client_reference_id,
+          mode: session.mode,
+          payment_status: session.payment_status,
         });
 
-        if (success) {
-          // optionally do anything here
+        const customerId = typeof session.customer === "string" ? session.customer : session.customer.id;
+        const subscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
+
+        console.log("Processing successful checkout:", {
+          email: session.customer_email,
+          customerId,
+          subscriptionId,
+          clientReferenceId: session.client_reference_id
+        });
+
+        // Only process if payment was successful
+        if (session.payment_status === 'paid') {
+          try {
+            const { success } = await ctx.runMutation(api.users.upgradeToPro, {
+              userId: session.client_reference_id,
+              stripeCustomerId: customerId,
+              stripeSubscriptionId: subscriptionId || "",
+              amount: session.amount_total ? session.amount_total / 100 : 0,
+            });
+
+            if (success) {
+              console.log("Successfully upgraded user to pro for user:", session.client_reference_id);
+            } else {
+              console.error("Failed to upgrade user to pro:", session.client_reference_id);
+              throw new Error("Failed to upgrade user to pro");
+            }
+          } catch (error) {
+            console.error("Error upgrading user to pro:", error);
+            throw error;
+          }
+        } else {
+          console.error("Payment not marked as paid:", session.payment_status);
+          throw new Error("Payment not marked as paid");
         }
       }
 
       return new Response("Webhook processed successfully", { status: 200 });
     } catch (error) {
-      console.log("Webhook error:", error);
+      console.error("Webhook error:", error);
       return new Response("Error processing webhook", { status: 500 });
     }
   }),

@@ -1,3 +1,5 @@
+"use client";
+
 import { CodeIcon, SendIcon } from "lucide-react";
 import { useState } from "react";
 import CommentContent from "./CommentContent";
@@ -11,7 +13,7 @@ function CommentForm({ isSubmitting, onSubmit }: CommentFormProps) {
   const [comment, setComment] = useState("");
   const [isPreview, setIsPreview] = useState(false);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Tab") {
       e.preventDefault();
       const start = e.currentTarget.selectionStart;
@@ -19,6 +21,13 @@ function CommentForm({ isSubmitting, onSubmit }: CommentFormProps) {
       const newComment = comment.substring(0, start) + "  " + comment.substring(end);
       setComment(newComment);
       e.currentTarget.selectionStart = e.currentTarget.selectionEnd = start + 2;
+    } else if (e.key === "Enter" && e.shiftKey && !isSubmitting) {
+      e.preventDefault();
+      if (!comment.trim()) return;
+      
+      await onSubmit(comment);
+      setComment("");
+      setIsPreview(false);
     }
   };
 

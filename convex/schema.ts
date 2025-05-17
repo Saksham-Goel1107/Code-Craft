@@ -8,8 +8,10 @@ export default defineSchema({
     name: v.string(),
     isPro: v.boolean(),
     proSince: v.optional(v.number()),
-    lemonSqueezyCustomerId: v.optional(v.string()),
-    lemonSqueezyOrderId: v.optional(v.string()),
+    stripeCustomerId: v.optional(v.string()),
+    stripeSubscriptionId: v.optional(v.string()),
+    amount: v.optional(v.number()),
+    lastPayment: v.optional(v.number()),
   }).index("by_user_id", ["userId"])
     .index("by_email", ["email"]),
 
@@ -40,6 +42,7 @@ export default defineSchema({
   stars: defineTable({
     userId: v.string(),
     snippetId: v.id("snippets"),
+    createdAt: v.number(),
   })
     .index("by_user_id", ["userId"])
     .index("by_snippet_id", ["snippetId"])
