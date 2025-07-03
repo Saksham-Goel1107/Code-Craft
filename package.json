@@ -21,7 +21,7 @@
     "framer-motion": "^11.13.1",
     "ioredis": "^5.6.1",
     "lucide-react": "^0.464.0",
-    "next": "^15.3.2",
+    "next": "^15.3.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-hot-toast": "^2.4.1",
