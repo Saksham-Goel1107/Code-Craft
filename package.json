@@ -10,7 +10,7 @@
     "test": "echo \"Skipping tests\" && exit 0"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.6.0",
+    "@clerk/nextjs": "^6.23.3",
     "@google/generative-ai": "^0.24.1",
     "@huggingface/inference": "^3.13.1",
     "@monaco-editor/react": "^4.6.0",
