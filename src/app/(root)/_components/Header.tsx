@@ -3,7 +3,6 @@ import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../../../convex/_generated/api";
 import Link from "next/link";
 import { Blocks, Code2, Sparkles } from "lucide-react";
-import { SignedIn } from "@clerk/nextjs";
 import ThemeSelector from "./ThemeSelector";
 import LanguageSelector from "./LanguageSelector";
 import RunButton from "./RunButton";
@@ -24,7 +23,10 @@ async function Header() {
         bg-[#0a0a0f]/80 backdrop-blur-xl p-6 mb-4 rounded-lg"
       >
         <div className=" lg:flex items-center gap-8">
-          <Link href="/" className="hidden md:flex items-center gap-3 group relative">
+          <Link
+            href="/"
+            className="hidden md:flex items-center gap-3 group relative"
+          >
             {/* Logo hover effect */}
 
             <div
@@ -92,9 +94,7 @@ async function Header() {
             </Link>
           )}
 
-          <SignedIn>
-            <RunButton />
-          </SignedIn>
+          <RunButton />
 
           <div className="pl-3 border-l border-gray-800">
             <HeaderProfileBtn />
